@@ -36,8 +36,8 @@ rcLocal: |
 
   touch /ready
   
-storageClassName: ssd
-storageSize: 32Gi
+homeSize: 32Gi
+homeStorageClassName: default
 
 image:
   repository: ghcr.io/mike-matera/ubuntu-jammy
@@ -70,11 +70,10 @@ securityContext:
 
 service:
   type: LoadBalancer
+  #loadBalancerIP: 172.30.5.242
   port: 22
   annotations: {}
-    # metallb.universe.tf/allow-shared-ip: cloud-share-key
-  extraConfig: {}
-    # loadBalancerIP: 172.30.5.242
+  #  metallb.universe.tf/allow-shared-ip: cloud-share-key
 
 resources: 
   requests:

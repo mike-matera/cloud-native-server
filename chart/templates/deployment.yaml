@@ -5,9 +5,7 @@ metadata:
   labels:
     {{- include "cloud-server.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
-  {{- end }}
+  replicas: 1
   selector:
     matchLabels:
       {{- include "cloud-server.selectorLabels" . | nindent 6 }}
@@ -28,10 +26,10 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       volumes:
-        - name: rcuser
+        - name: config
           configMap:
             name: {{ include "cloud-server.fullname" . }}
-            defaultMode: 0600
+            defaultMode: 0500
         - name: home
           persistentVolumeClaim:
             claimName: {{ include "cloud-server.fullname" . }}
@@ -51,11 +49,11 @@ spec:
             - name: container
               value: other
           volumeMounts:
-            - name: rcuser
-              mountPath: "/etc/rc.user"
-              subPath: "rc.user"
+            - name: config
+              mountPath: "/etc/rc.local"
+              subPath: "rc.local"
               readOnly: true
-            - name: rcenv
+            - name: config
               mountPath: "/etc/rc.env"
               subPath: "rc.env"
               readOnly: true

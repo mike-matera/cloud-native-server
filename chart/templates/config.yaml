@@ -5,5 +5,5 @@ metadata:
   labels:
     {{- include "cloud-server.labels" . | nindent 4 }}
 data:
-  rc.env: {{ .Values.rcEnv }} 
-  rc.local: {{ .Values.rcLocal }} 
+  rc.env: | {{ .Values.rcEnv | nindent 4 }}
+  rc.local: | {{ .Values.rcLocal | nindent 4}}

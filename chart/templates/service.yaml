@@ -5,10 +5,12 @@ metadata:
   labels:
     {{- include "cloud-server.labels" . | nindent 4 }}
   annotations:
-    {{- include "cloud-server.annotations" . | nindent 4 }}
+    {{- toYaml .Values.service.annotations | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
-  {{- include "cloud-server.extraConfig" . | nindent 2 }}
+  {{- if hasKey .Values.service "loadBalancerIP" }}
+  loadBalancerIP: {{ .Values.service.loadBalancerIP }}
+  {{- end }}
   ports:
     - port: {{ .Values.service.port }}
       targetPort: http
