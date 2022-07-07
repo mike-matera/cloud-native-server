@@ -22,7 +22,7 @@ jobs:
 
       - name: Download the Ubuntu image
         run: |
-          wget -q -O $GITHUB_WORKSPACE/apps/ubuntu-server/jammy-server-cloudimg-amd64-root.tar.xz https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64-root.tar.xz
+          wget -q -O $GITHUB_WORKSPACE/containers/ubuntu-jammy/jammy-server-cloudimg-amd64-root.tar.xz https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64-root.tar.xz
 
       - name: Log in to the Container registry
         uses: docker/login-action@v2
