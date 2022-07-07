@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "cloud-server.fullname" . }}
+  labels:
+    {{- include "cloud-server.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "cloud-server.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "cloud-server.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "cloud-server.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+        - name: rcuser
+          configMap:
+            name: {{ include "cloud-server.fullname" . }}
+            defaultMode: 0600
+        - name: home
+          persistentVolumeClaim:
+            claimName: {{ include "cloud-server.fullname" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          tty: true
+          stdin: true
+          {{- if not .Values.securityContext.privileged }}
+          command: ["/usr/bin/bash"]
+          args: ["-c", "mkdir /run/sshd; /etc/rc.local; touch /ready; exec /usr/sbin/sshd -e -D"]
+          {{- end }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: container
+              value: other
+          volumeMounts:
+            - name: rcuser
+              mountPath: "/etc/rc.user"
+              subPath: "rc.user"
+              readOnly: true
+            - name: rcenv
+              mountPath: "/etc/rc.env"
+              subPath: "rc.env"
+              readOnly: true
+            - name: home
+              mountPath: "/home"
+          ports:
+            - containerPort: 22
+          livenessProbe:
+            tcpSocket:
+              port: 22
+            failureThreshold: 2
+            periodSeconds: 60
+          readinessProbe:
+            exec:
+              command:
+              - cat
+              - /ready
+            initialDelaySeconds: 30
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

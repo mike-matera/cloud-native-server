@@ -1,0 +1,22 @@
+
+- hosts: all
+  become: true
+  name: Install extra packages.
+  tasks: 
+    - ansible.builtin.apt:
+        update_cache: yes
+    - ansible.builtin.package:
+        name:
+        - python3-pip 
+        - git
+        - tree 
+        - bsdmainutils
+        - dictionaries-common
+        - wamerican
+        - iputils-ping
+        - mtr
+        - zsh 
+        - ksh 
+        - tcsh 
+        - csh
+        state: latest

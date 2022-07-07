@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "cloud-server.fullname" . }}
+  labels:
+    {{- include "cloud-server.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: {{ .Values.homeSize }}
+  storageClassName: {{ .Values.homeStorageClassName }}

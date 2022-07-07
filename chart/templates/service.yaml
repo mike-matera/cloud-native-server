@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cloud-server.fullname" . }}
+  labels:
+    {{- include "cloud-server.labels" . | nindent 4 }}
+  annotations:
+    {{- include "cloud-server.annotations" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  {{- include "cloud-server.extraConfig" . | nindent 2 }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "cloud-server.selectorLabels" . | nindent 4 }}

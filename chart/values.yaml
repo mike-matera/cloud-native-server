@@ -1,0 +1,91 @@
+
+rcEnv: |
+  DEFAULT_USER="ubuntu" 
+  DEFAULT_KEYS=""
+  SET_HOSTNAME="myserver"
+  CUSTOMIZE_REPO="https://github.com/mike-matera/cloud-native-server.git"
+  CUSTOMIZE_CMD="ansible-playbook --connection=local --inventory 127.0.0.1, --limit 127.0.0.1 init/playbook.yaml"
+
+rcLocal: |
+  #! /usr/bin/bash
+  set -e 
+
+  . /etc/rc.env 
+  
+  # System setup 
+  echo "127.0.1.1 ${SET_HOSTNAME}" | tee -a /etc/hosts 
+  echo "${SET_HOSTNAME}" | tee /etc/hostname 
+  hostname ${SET_HOSTNAME} || true  # Doesn't work in unpriveleged containers.
+
+  # User setup
+  useradd ${DEFAULT_USER} -u 1000 -U -G adm,sudo -m -s /usr/bin/bash
+  echo "${DEFAULT_USER} ALL=(ALL) NOPASSWD:ALL" | tee /etc/sudoers.d/${DEFAULT_USER}
+  chown ${DEFAULT_USER}:${DEFAULT_USER} /home/${DEFAULT_USER}
+  if [ ! -z "${DEFAULT_KEYS}" ]; then
+      su ${DEFAULT_USER} -c "/usr/bin/ssh-import-id ${DEFAULT_KEYS}"
+  fi 
+
+  # User customization 
+  git clone ${CUSTOMIZE_REPO} /tmp/boot-custom
+  chown -R ${DEFAULT_USER}:${DEFAULT_USER} /tmp/boot-custom
+  (
+      cd /tmp/boot-custom 
+      su ${DEFAULT_USER} -c "${CUSTOMIZE_CMD}"
+  )
+  rm -rf /tmp/boot-custom 
+
+  touch /ready
+  
+storageClassName: ssd
+storageSize: 32Gi
+
+image:
+  repository: ghcr.io/mike-matera/ubuntu-jammy
+  pullPolicy: IfNotPresent
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: 
+  privileged: true
+  allowPrivilegeEscalation: true
+  capabilities:
+    add:
+      - SYS_ADMIN
+
+service:
+  type: LoadBalancer
+  port: 22
+  annotations: {}
+    # metallb.universe.tf/allow-shared-ip: cloud-share-key
+  extraConfig: {}
+    # loadBalancerIP: 172.30.5.242
+
+resources: 
+  requests:
+    cpu: 1000m
+    memory: 2Gi
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
