@@ -17,6 +17,9 @@ RUN apt update -y && DEBIAN_FRONTEND=noninteractive apt install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Defer SSH startup.
+COPY ssh.service /lib/systemd/system/ssh.service
+
 RUN mkdir -p /etc/ssh/ca
 
 STOPSIGNAL SIGRTMIN+3
