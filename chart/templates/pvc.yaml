@@ -12,4 +12,7 @@ spec:
   resources:
     requests:
       storage: {{ .Values.homeSize }}
+  {{- if hasKey .Values "homeStorageClassName" }}
   storageClassName: {{ .Values.homeStorageClassName }}
+  {{- end }}
+

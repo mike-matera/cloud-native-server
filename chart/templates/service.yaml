@@ -13,8 +13,7 @@ spec:
   {{- end }}
   ports:
     - port: {{ .Values.service.port }}
-      targetPort: http
+      targetPort: 22
       protocol: TCP
-      name: http
   selector:
     {{- include "cloud-server.selectorLabels" . | nindent 4 }}

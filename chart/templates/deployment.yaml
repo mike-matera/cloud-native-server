@@ -26,6 +26,14 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       volumes:
+        - name: sshsecret
+          secret:
+            secretName: {{ include "cloud-server.fullname" . }}
+            defaultMode: 0400
+        - name: sshconfig
+          configMap:
+            name: {{ include "cloud-server.fullname" . }}-ssh
+            defaultMode: 0444
         - name: config
           configMap:
             name: {{ include "cloud-server.fullname" . }}
@@ -49,14 +57,21 @@ spec:
             - name: container
               value: other
           volumeMounts:
+            - name: sshsecret
+              mountPath: "/etc/ssh/ca/ca_key"
+              subPath: "ca_key"
+            - name: sshconfig
+              mountPath: "/etc/ssh/ca/ca_key.pub"
+              subPath: "ca_key.pub"
+            - name: sshconfig
+              mountPath: "/etc/ssh/sshd_config"
+              subPath: "sshd_config"
             - name: config
               mountPath: "/etc/rc.local"
               subPath: "rc.local"
-              readOnly: true
             - name: config
               mountPath: "/etc/rc.env"
               subPath: "rc.env"
-              readOnly: true
             - name: home
               mountPath: "/home"
           ports:
