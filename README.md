@@ -120,7 +120,7 @@ You should look at the existing code in `chart/values.yaml`. There are a few imp
 
 The default `rc.local` script looks for the existence of two variables that can be overridden using the `rcEnv` key in your `custom.yaml` file: 
 
-```
+```yaml
 rcEnv: |
     DEFAULT_USER="admin" 
     DEFAULT_KEY=""
@@ -144,4 +144,60 @@ The commands are run as the user `$DEFAULT_USER`, not `root`. The variables from
 
 1. This is the easiest way to customize your server. Try this first. 
 
+## Security 
 
+This project was inspired by running [LXD](https://linuxcontainers.org/lxd/introduction/) containers for the last few years. They took the place of VMware VMs and I was really happy with how much easier they are to build and manage. I started to wonder, *would it be possible to run `systemd` in an unprivileged container in Kubernetes?* It turns out the answer is no (I will explain this in detail at some point). This project runs `systemd` in a privileged container, but also supports unprivileged containers by launching `sshd` directly without `systemd`. 
+
+Containerization is not a security technology. Running untrusted workloads --like a student shell-- carries a greater risk than running the same workload in a VM. But containers are lighter, more flexible and convenient, more robust and resilient than VMs. Until Kubernetes supports [user namespaces](https://kinvolk.io/blog/2020/12/improving-kubernetes-and-container-security-with-user-namespaces/) a container escape from a privileged container means the attacker has full control of the node. 
+
+There is one essential question to consider when you deploy this project: 
+
+> Will you give *untrusted* users `sudo` access? 
+
+The next sections will show you how to configure the application based on the answer to the question above. 
+
+### I Only Have Trusted `root` Users 
+
+**Run the privileged version.** This the default. You can set the privileged setting in your `custom.yaml` file: 
+
+```yaml
+securityContext: 
+  privileged: true
+  capabilities:
+    add:
+      - SYS_ADMIN
+```
+
+This results in a very VM-like system. Users login and get a personal `cgroup` and can see each other with the `who` and `w` commands. The system runs normally with periodic security updates, `cron` and all of the things you'd expect. But, the container runs as root on the node so a container escape is serious. Container escapes are harder --maybe impossible-- as a non privileged user on your system. 
+
+### I'm Giving Students `sudo` Access 
+
+**Run the unprivileged version.**
+
+```yaml
+securityContext: 
+  privileged: false
+  capabilities: {}
+```
+
+This results in a system that's only running `sshd`. The Kubernetes deployment overrides the container's entrypoint do to this. Many things will still work and the user has `sudo` access. The container itself is running as an unprivileged user so a container escape is far less damaging. 
+
+### The Hostname and `CAP_SYS_ADMIN` 
+
+Annoyingly, in order to set the hostname *inside* of the container the container process must have the `CAP_SYS_ADMIN` capability (when specified in Kubernetes is just `SYS_ADMIN`). Containers that have the capability will obey the `SET_HOSTNAME` variable and have a nice hostname:
+
+```
+[admin@opus /]# 
+```
+
+Unprivileged containers will get the default hostname which comes from Kubernetes: 
+
+```
+[admin@fedora1-cloud-server-76b7cfd78-8tlw5 /]# 
+```
+
+There's no fix for this. 
+
+### Don't Touch `allowPrivilegeEscalation`
+
+The `allowPrivilegeEscalation` setting controls whether to obey the `suid` bit on programs in the container and must be set to `true`. While it may seem like a good way to restrain users, many programs on the system require `suid` to work, including `ping`, `sudo` and `passwd`. If you set `allowPrivilegeEscalation` to `false` those programs will fail. 
