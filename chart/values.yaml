@@ -79,7 +79,7 @@ rcLocal: |
   ssh-keygen -s /etc/ssh/ca/ca_key -I ${SET_HOSTNAME} -h /etc/ssh/ssh_host_rsa_key.pub
 
   # User setup
-  useradd ${DEFAULT_USER} -u 1000 -U -G adm,sudo -m -s /usr/bin/bash
+  useradd ${DEFAULT_USER} -u 1000 -U -G adm -m -s /usr/bin/bash
   echo "${DEFAULT_USER} ALL=(ALL) NOPASSWD:ALL" | tee /etc/sudoers.d/${DEFAULT_USER}
   chown ${DEFAULT_USER}:${DEFAULT_USER} /home/${DEFAULT_USER}
   if [ ! -z "${DEFAULT_KEY}" ]; then
@@ -102,7 +102,7 @@ rcLocal: |
 
 
 image:
-  repository: ghcr.io/mike-matera/ubuntu-jammy
+  repository: ghcr.io/mike-matera/cloud-native-server
   pullPolicy: IfNotPresent
   tag: ""
 

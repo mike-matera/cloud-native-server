@@ -1,7 +1,7 @@
 FROM fedora:36 
 
 RUN dnf install -y \
-    systemd man openssh-server ansible \
+    systemd man openssh-server ansible git \
     @xfce-desktop-environment tigervnc-server firefox \
     && dnf clean all 
 

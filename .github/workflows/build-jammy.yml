@@ -35,7 +35,10 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.REGISTRY }}/mike-matera/ubuntu-jammy
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=tag
+            type=raw,value=ubuntu-jammy
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v3

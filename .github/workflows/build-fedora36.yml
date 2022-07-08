@@ -31,7 +31,10 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.REGISTRY }}/mike-matera/fedora-36
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=tag
+            type=raw,value=fedora-36
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v3

@@ -30,7 +30,7 @@ You should have a Kubernetes cluster already built and `kubectl` and `helm` inst
 
     ```yaml
     rcEnv: |
-        DEFAULT_USER="ubuntu" 
+        DEFAULT_USER="admin" 
         DEFAULT_KEY=""
         DEFAULT_KEY_IMPORT=""
         SET_HOSTNAME="myserver"
@@ -57,7 +57,7 @@ You should have a Kubernetes cluster already built and `kubectl` and `helm` inst
     Login using the IP address:
 
     ```console
-    $ ssh ubuntu@172.20.2.100
+    $ ssh admin@172.20.2.100
     ```
 
 ## Configuration 
