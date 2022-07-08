@@ -56,7 +56,7 @@ ssh:
     -----END OPENSSH PRIVATE KEY-----  
 
 rcEnv: |
-  DEFAULT_USER="ubuntu" 
+  DEFAULT_USER="admin" 
   DEFAULT_KEY=""
   DEFAULT_KEY_IMPORT=""
   SET_HOSTNAME="myserver"
