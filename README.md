@@ -43,7 +43,7 @@ You should have a Kubernetes cluster already built and `kubectl` and `helm` inst
 4. Use `helm` to deploy your server: 
 
     ```console 
-    $ helm install test-ssh chart --values custom.yaml --values secrets/ssh-keys.yaml
+    $ helm install test-ssh cloud-native-server/ --values custom.yaml --values secrets/ssh-keys.yaml
     ```
 
 5. Wait for the application to deploy and check the service IP:
@@ -104,7 +104,7 @@ rcLocal: |
   [...your code here...]
 ```
 
-You should look at the existing code in `chart/values.yaml`. There are a few important things that the `rc.local` script must do: 
+You should look at the existing code in `cloud-native-server/values.yaml`. There are a few important things that the `rc.local` script must do: 
 
 1. Set the hostname 
 1. Create SSH host keys and sign them with the SSH CA key 
