@@ -3,7 +3,7 @@
 Since the dawn of the modern operating system, computer classes have used a shared login server to create a work environment for students. In the cloud era we've used virtual machines in place of physical servers (IaaS) to make our workloads more convenient to manage. But, our severs are still *pets*, they are precious to us, because they are stateful appliances running bespoke applications with some real problems: 
 
 1. They are a single point of failure that impacts our ability to teach. 
-1. Students are a security risk. A student was once able to maintain access after the end of a term. 
+1. Students are a security risk. I once caught a student who was able to maintain access after the end of a term. 
 1. Management tools like VMware are clunky compared to cloud vendors. 
 1. Cloud vendors are expensive for this kind of workload. 
 
