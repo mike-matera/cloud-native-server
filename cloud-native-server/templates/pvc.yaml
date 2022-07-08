@@ -5,6 +5,8 @@ metadata:
   name: {{ include "cloud-server.fullname" . }}
   labels:
     {{- include "cloud-server.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/resource-policy: "keep"
 spec:
   accessModes:
     - ReadWriteOnce

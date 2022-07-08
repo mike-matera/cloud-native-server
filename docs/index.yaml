@@ -3,7 +3,17 @@ entries:
   cloud-server:
   - apiVersion: v2
     appVersion: jammy-2022070801
-    created: "2022-07-08T15:14:20.448625751-07:00"
+    created: "2022-07-08T15:29:12.107623021-07:00"
+    description: An individual UNIX server for teaching.
+    digest: 026a6150149514e2b919c0ffae2eed236927a0c584ae570668c679422bc0f6ef
+    name: cloud-server
+    type: application
+    urls:
+    - cloud-server-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v2
+    appVersion: jammy-2022070801
+    created: "2022-07-08T15:29:12.107057876-07:00"
     description: An individual UNIX server for teaching.
     digest: e3cf1d8855601ae7ffc12a4a55dbdaaf3630ef6de7d8c72ccd86c13dc8950e0c
     name: cloud-server
@@ -11,4 +21,4 @@ entries:
     urls:
     - cloud-server-0.1.0.tgz
     version: 0.1.0
-generated: "2022-07-08T15:14:20.447925799-07:00"
+generated: "2022-07-08T15:29:12.106343749-07:00"
