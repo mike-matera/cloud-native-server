@@ -90,8 +90,7 @@ rcLocal: |
   fi 
 
   # User customization 
-  git clone --recurse-submodules ${CUSTOMIZE_REPO} /tmp/boot-custom
-  chown -R ${DEFAULT_USER}:${DEFAULT_USER} /tmp/boot-custom
+  su ${DEFAULT_USER} -c "git clone --recurse-submodules ${CUSTOMIZE_REPO} /tmp/boot-custom"
   (
       cd /tmp/boot-custom 
       su ${DEFAULT_USER} -c "${CUSTOMIZE_CMD}"
