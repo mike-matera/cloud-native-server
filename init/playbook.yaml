@@ -1,22 +1,22 @@
+- name: Generate host groups by distro.
+  hosts: all
+  tasks:
+    - name: Classify hosts depending on their OS distribution
+      group_by:
+        key: os_{{ ansible_facts['distribution'] }}
+
+- hosts: os_Ubuntu 
+  name: Update package cache on Ubuntu
+  become: true
+  tasks:
+    - ansible.builtin.apt:
+        update_cache: yes
 
 - hosts: all
   become: true
-  name: Install extra packages.
+  name: Install base packages.
   tasks: 
-    - ansible.builtin.apt:
-        update_cache: yes
     - ansible.builtin.package:
         name:
-        - python3-pip 
-        - git
-        - tree 
-        - bsdmainutils
-        - dictionaries-common
-        - wamerican
-        - iputils-ping
-        - mtr
-        - zsh 
-        - ksh 
-        - tcsh 
-        - csh
+          "{{ packages }}"
         state: latest

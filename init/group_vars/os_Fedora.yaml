@@ -1,0 +1,12 @@
+packages:
+  - python3-pip 
+  - python3-devel
+  - gcc
+  - gcc-c++
+  - python3-cffi
+  - python3-wheel
+  - make
+  - zsh 
+  - ksh 
+  - tcsh 
+  - csh
