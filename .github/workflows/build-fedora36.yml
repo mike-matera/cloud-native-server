@@ -1,4 +1,4 @@
-name: Jammy
+name: Fedora36
 
 on:
   push:
