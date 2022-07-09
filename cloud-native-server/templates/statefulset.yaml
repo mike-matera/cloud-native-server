@@ -1,16 +1,16 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: {{ include "cloud-server.fullname" . }}
   labels:
     {{- include "cloud-server.labels" . | nindent 4 }}
 spec:
-  replicas: 1
-  strategy:
-    type: Recreate 
   selector:
     matchLabels:
       {{- include "cloud-server.selectorLabels" . | nindent 6 }}
+  serviceName: {{ include "cloud-server.fullname" . }}
+  replicas: 1
+  minReadySeconds: 0
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -27,6 +27,7 @@ spec:
       serviceAccountName: {{ include "cloud-server.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      terminationGracePeriodSeconds: 10
       volumes:
         - name: sshsecret
           secret:
@@ -40,9 +41,6 @@ spec:
           configMap:
             name: {{ include "cloud-server.fullname" . }}
             defaultMode: 0500
-        - name: home
-          persistentVolumeClaim:
-            claimName: {{ include "cloud-server.fullname" . }}
       containers:
         - name: {{ .Chart.Name }}
           tty: true
@@ -74,7 +72,7 @@ spec:
             - name: config
               mountPath: "/etc/rc.env"
               subPath: "rc.env"
-            - name: home
+            - name: {{ include "cloud-server.fullname" . }}-home
               mountPath: "/home"
           ports:
             - containerPort: 22
@@ -104,3 +102,20 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+  volumeClaimTemplates:
+    - metadata:
+        name: {{ include "cloud-server.fullname" . }}-home
+        labels:
+          {{- include "cloud-server.labels" . | nindent 10 }}
+        annotations:
+          helm.sh/resource-policy: "keep"
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        volumeMode: Filesystem
+        resources:
+          requests:
+            storage: {{ .Values.homeSize }}
+            {{- if hasKey .Values "homeStorageClassName" }}
+            storageClassName: {{ .Values.homeStorageClassName }}
+            {{- end }}
