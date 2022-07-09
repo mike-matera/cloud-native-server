@@ -15,5 +15,12 @@ spec:
     - port: {{ .Values.service.port }}
       targetPort: 22
       protocol: TCP
+      name: ssh
+    {{- range .Values.extraPorts }}
+    - port: {{ .port }}
+      targetPort: {{ .name }}
+      protocol: {{ .proto }}
+      name: {{ .name }}
+    {{- end }}
   selector:
     {{- include "cloud-server.selectorLabels" . | nindent 4 }}

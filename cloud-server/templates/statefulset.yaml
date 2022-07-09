@@ -80,6 +80,11 @@ spec:
             {{- end }}
           ports:
             - containerPort: 22
+            {{- range .Values.extraPorts }}
+            - containerPort: {{ .port }}
+              name: {{ .name }}
+              protocol: {{ .proto }}
+            {{- end }}
           livenessProbe:
             tcpSocket:
               port: 22

@@ -1,6 +1,14 @@
 homeSize: 32Gi
 #homeStorageClassName: my-sc
 
+extraPorts: []
+  #- port: 80
+  #  proto: TCP
+  #  name: http
+  #- port: 443
+  #  proto: TCP
+  #  name: https  
+
 extraMounts: []
   #- name: cis90
   #  path: /home/cis90
