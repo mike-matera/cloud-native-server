@@ -74,6 +74,10 @@ spec:
               subPath: "rc.env"
             - name: {{ include "cloud-server.fullname" . }}-home
               mountPath: "/home"
+            {{- range .Values.extraMounts }}
+            - name: {{ include "cloud-server.fullname" $ }}-{{ .name }}
+              mountPath: {{ .path }}
+            {{- end }}
           ports:
             - containerPort: 22
           livenessProbe:
@@ -119,3 +123,19 @@ spec:
         {{- if hasKey .Values "homeStorageClassName" }}
         storageClassName: {{ .Values.homeStorageClassName }}
         {{- end }}
+    {{- range .Values.extraMounts }}
+    - metadata:
+        name: {{ include "cloud-server.fullname" $ }}-{{ .name }}
+        annotations:
+          helm.sh/resource-policy: "keep"
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        volumeMode: Filesystem
+        resources:
+          requests:
+            storage: {{ .size }}
+        {{- if hasKey . "className" }}
+        storageClassName: {{ .className }}
+        {{- end }}
+    {{- end }}    

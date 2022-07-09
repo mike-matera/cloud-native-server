@@ -1,6 +1,16 @@
 homeSize: 32Gi
 #homeStorageClassName: my-sc
 
+extraMounts: []
+  #- name: cis90
+  #  path: /home/cis90
+  #  size: 1Gi 
+  #  className: hdd
+  #- name: cis91
+  #  path: /home/cis91
+  #  size: 1Gi 
+  #  className: hdd
+
 ssh:
   sshd_config: |
     Include /etc/ssh/sshd_config.d/*.conf
