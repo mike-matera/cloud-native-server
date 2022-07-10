@@ -13,37 +13,36 @@ This project is a way to deploy a traditional login server into a Kubernetes clu
 
 You should have a Kubernetes cluster already built and `kubectl` and `helm` installed and configured. 
 
-1. Check out this repo: 
+1. Add this Helm repo: 
 
     ```console
-    $ git clone https://github.com/mike-matera/cloud-native-server.git
-    $ cd cloud-native-server
+    $ helm repo add cloud-native-server https://mike-matera.github.io/cloud-native-server/
+    $ helm repo update
     ```
 
-2. Generate the SSH CA key: 
+1. Generate an SSH CA key: 
 
     ```console
-    $ make
+    $ ssh-keygen -t rsa -f ca_key -N ''
     ```
 
-3. Create a file called `custom.yaml` with the following contents: 
+1. Sign your SSH public key using the CA key. This creates a certificate you can use to login to your server. 
 
-    ```yaml
-    user: human 
-    userSSHKey: ""
-    userSSHImport: ""
-    hostName: "myserver"
+    ```console
+    cp ~/.ssh/id_rsa.pub . 
+    ssh-keygen -s ./ca_key -I admin-key -n $USER ./id_rsa.pub
     ```
-
-    Update the `userSSHKey` variable to hold your SSH public key or the `userSSHImport` to a string suitable for [ssh-import-id](https://manpages.ubuntu.com/manpages/jammy/man1/ssh-import-id.1.html) to load public keys from your GitHub or Launchpad accounts. Update the `user` and `hostName` if you like. 
-
-4. Use `helm` to deploy your server: 
+  
+1. Use `helm` to deploy your server: 
 
     ```console 
-    $ helm install test-ssh cloud-native-server/ --values custom.yaml --values secrets/ssh-keys.yaml
+    $ helm install myserver cloud-native-server/cloud-server \
+      --set user=$USER \
+      --set hostName=myhost \
+      --set-file ssh.ca_key=./ca_key,ssh.ca_key_pub=./ca_key.pub
     ```
 
-5. Wait for the application to deploy and check the service IP:
+1. Wait for the application to deploy and check the service IP:
 
     ```console
     $ kubectl get service
@@ -54,27 +53,29 @@ You should have a Kubernetes cluster already built and `kubectl` and `helm` inst
     Login using the IP address:
 
     ```console
-    $ ssh human@172.20.2.100
+    $ ssh -o CertificateFile=./id_rsa-cert.pub $USER@172.20.2.100  
     ```
 
-6. Forgot to load SSH keys? **No problem!** The server is configured with an SSH Certificate Authority. Any SSH public key that's signed with the CA key will be allowed to log in. Assuming you created your own key and used the `human` username you can now create a certificate with `ssh-keygen`:
+1. Cleanup is a two step process because home directories are preserved between application installs and uninstalls to protect user's precious data. 
 
-```console
-$ ssh-keygen -s ./secrets/ca_key -I human_key -n human ~/.ssh/id_rsa.pub
-```
+    1. Uninstall the Helm chart:
 
-A certificate will be place in `~/.ssh/id_rsa-cert.pub`. You can now login: 
+        ```console 
+        $ helm uninstall myserver 
+        ``` 
 
-```console
-$ ssh human@myserver
-```
+    1. Delete home directories: 
+
+        ```console 
+        $ kubectl delete pvc home-myserver-cloud-server-0
+        ```
 
 ## Configuration 
 
 There are three configuration stages:
 
 1. The `Dockerfile` build. The purpose of this stage is have a functional base container with most of good stuff installed. This is the least flexible stage. 
-1. The execution of `rc.local` on boot. This stage customizes the image with SSH keys and creates the admin user. 
+1. The execution of `/etc/rc.local` on boot. This stage customizes the image with SSH keys and creates the admin user. 
 1. Executing an arbitrary command in an arbitrary GIT repository. This is the most flexible stage. 
 
 The next sections describe how to customize each stage. 
@@ -83,7 +84,7 @@ The next sections describe how to customize each stage.
 
 You can find the `Dockerfile` for the supported distros in the `containers` directory. If you clone this repository on GitHub you can reuse the `.github/workflows/*` files to build your own packages. Container builds are triggered by certain tags. For example, the Ubuntu container is build on a `jammy-*` tag. 
 
-If you use a custom image add the following lines to your `custom.yaml` from the quickstart:
+If you use a custom image, create a values file called `custom.yaml` and add the following lines to it:
 
 ```yaml
 image:

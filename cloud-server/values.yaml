@@ -1,4 +1,4 @@
-homeSize: 32Gi
+homeSize: 2Gi
 #homeStorageClassName: my-sc
 
 user: human 
@@ -38,47 +38,6 @@ ssh:
     Subsystem	sftp	/usr/lib/openssh/sftp-server
     TrustedUserCAKeys /etc/ssh/ca/ca_key.pub
     HostCertificate /etc/ssh/ssh_host_rsa_key-cert.pub
-  ca_key_pub: | 
-    ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCjCDaCJ99HSffaAf032aTZ5O+lIVI9r8OnM1fUMcdcWkiVaajY1I8IFmEyWXb3y5BOtIQMAAH+cVc2CKfBFpm4x8HmBsEcRUyu362gSdblKjcsZsYpGsdxbnL24dZARiPXEry0GToJLRmX1DHY7KWXsgRY4+0qrv3xBaiMWlK+UTTMJA6E/BDUY8DivIgzvNJjM7JVk39L8vJ3dQ7NHeoGS/fC9Y+4G8NrW31gYcQXDng8GjiNiyx0PvJG1Y+QI8zAB9XiZejjTrjKQxDC42JnckHhiUEk1vvYddyjJaL51booSc1HM/ZMLiJoPBq2O6GCkWVKeZGfM0MZdWSRGZEjTTlAuRxAWd2AmtX77zg4YmRzHmubIw2uybIfDENSg6Odqr2y5xU1I5jpClw86BQGrAeF9pu3+u/bV7ck/Eg4jLR2qbkb3u7j25dz/Z5tYKFoQLk+2iW0AujsiwwNLSP/Ma4H78HNaPj7DzANlEFYbat86dimPS7HptgZvVsd5uc= change@me
-  ca_key: |
-    -----BEGIN OPENSSH PRIVATE KEY-----
-    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
-    -----END OPENSSH PRIVATE KEY-----  
 
 rcEnv: |
   # Extra variables for startup here.

@@ -12,14 +12,3 @@ Your cloud SSH server has started!
 Add the following line to your `known_hosts` file to automatically trust servers with your CA key:
 
     @cert-authority * {{ .Values.ssh.ca_key_pub }}
-
-This is your host configuration: 
-
-{{ .Values.rcEnv | nindent 4 }}
-
-If you did not specify an SSH public key in the DEFAULT_KEY variable, or a LaunchPad or GitHub 
-account in the DEFAULT_KEY_IMPORT variable, you will not be able to login using SSH. 
-
-**DO NOT USE THE DEFAULT SSH CA KEY IN PRODUCTION** 
-
-You should generate your own keys by running `make`. 

@@ -23,5 +23,4 @@ metadata:
   labels:
     {{- include "cloud-server.labels" . | nindent 4 }}
 data:
-  ca_key.pub: | {{ .Values.ssh.ca_key_pub | nindent 4 }}
   sshd_config: | {{ .Values.ssh.sshd_config | nindent 4 }}

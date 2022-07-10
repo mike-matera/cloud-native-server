@@ -60,7 +60,7 @@ spec:
             - name: sshsecret
               mountPath: "/etc/ssh/ca/ca_key"
               subPath: "ca_key"
-            - name: sshconfig
+            - name: sshsecret
               mountPath: "/etc/ssh/ca/ca_key.pub"
               subPath: "ca_key.pub"
             - name: sshconfig
@@ -72,10 +72,10 @@ spec:
             - name: config
               mountPath: "/etc/rc.env"
               subPath: "rc.env"
-            - name: {{ include "cloud-server.fullname" . }}-home
+            - name: home
               mountPath: "/home"
             {{- range .Values.extraMounts }}
-            - name: {{ include "cloud-server.fullname" $ }}-{{ .name }}
+            - name: {{ .name }}
               mountPath: {{ .path }}
             {{- end }}
           ports:
@@ -113,7 +113,7 @@ spec:
       {{- end }}
   volumeClaimTemplates:
     - metadata:
-        name: {{ include "cloud-server.fullname" . }}-home
+        name: home
         labels:
           {{- include "cloud-server.labels" . | nindent 10 }}
         annotations:
@@ -130,7 +130,7 @@ spec:
         {{- end }}
     {{- range .Values.extraMounts }}
     - metadata:
-        name: {{ include "cloud-server.fullname" $ }}-{{ .name }}
+        name: {{ .name }}
         annotations:
           helm.sh/resource-policy: "keep"
       spec:
