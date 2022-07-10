@@ -2,11 +2,12 @@ homeSize: 2Gi
 #homeStorageClassName: my-sc
 
 user: human 
+hostName: "myserver"
 userSSHKey: ""
 userSSHImport: ""
-hostName: "myserver"
-customizeRepo: https://github.com/mike-matera/cloud-native-server.git
-customizeCommand: ansible-playbook --connection=local --inventory 127.0.0.1, --limit 127.0.0.1 init/playbook.yaml
+customizeRepo: ""
+customizeCommand: ""
+privileged: true 
 
 extraPorts: []
   #- port: 80
@@ -96,15 +97,6 @@ serviceAccount:
   name: ""
 
 podAnnotations: {}
-
-podSecurityContext: {}
-
-securityContext: 
-  privileged: true
-  allowPrivilegeEscalation: true
-  capabilities:
-    add:
-      - SYS_ADMIN
 
 service:
   type: LoadBalancer

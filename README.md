@@ -70,15 +70,138 @@ You should have a Kubernetes cluster already built and `kubectl` and `helm` inst
         $ kubectl delete pvc home-myserver-cloud-server-0
         ```
 
-## Configuration 
+## Chart Parameters 
 
-There are three configuration stages:
+The following table shows the configuration options available in `cloud-server/values.yaml`. Most configuration tasks can be accomplished using these values: 
 
-1. The `Dockerfile` build. The purpose of this stage is have a functional base container with most of good stuff installed. This is the least flexible stage. 
-1. The execution of `/etc/rc.local` on boot. This stage customizes the image with SSH keys and creates the admin user. 
+### Global Parameters 
+
+| Name | Description | Value | 
+| --- | --- | --- | 
+| `homeSize` | Size of the `/home` mount | `2Gi` | 
+| `homeStorageClassName` | Storage class for the home mount | `""` | 
+| `user` | The username of the default user | `"human"` |  
+| `hostName` | The hostname | `"myserver"` |
+| `userSSHKey` | An SSH public key that will be added to authorized_keys of the default user. | `""` |
+| `userSSHImport` | Import default user keys with `ssh-import-id` | `""` | 
+| `customizeRepo` | Checkout a repository on boot | `""` | 
+| `customizeCommand` | Run this command in the root of the `customizeRepo` repository | `""` | 
+| `privileged` | Create a privileged container. **See the "Security" section for details** | `true` |  
+
+### SSH Parameters 
+
+| Name | Description | Value | 
+| --- | --- | --- | 
+| `ssh.ca_key` | An SSH private key for signing SSH certificates | None/Required | 
+| `ssh.ca_key_pub` | The corresponding public key for `ssh.ca_key` | None/Required | 
+
+### Image Options 
+
+| Name | Description | Value | 
+| --- | --- | --- | 
+| `image.repository` | The image repository for the container. |	`ghcr.io/mike-matera/cloud-native-server` | 
+| `image.tag` | Container image tag. Change this for different distros. | `jammy-2022070801` | 
+| `image.pullPolicy` | 	Image pull policy	| `IfNotPresent` | 
+| `image.pullSecrets` | Specify docker-registry secret names as an array | `[]` | 
+
+### Customizing Mounts 
+
+You can add mounted volumes to your container. This is useful when you want to keep some persistent data separate from other persistent data. For example you might have a home directory structure that separates students depending on what class they're enrolled in.
+
+```yaml
+extraMounts:
+  - name: cis90
+    path: /home/cis90
+    size: 1Gi 
+    className: hdd
+  - name: cis91
+    path: /home/cis91
+    size: 1Gi 
+    className: hdd
+```
+
+The `extraMounts` array will create a `PersistentVolumeClaim` for each entry. All of the fields are required (including the one for the storageClass name).
+
+### Customizing Ports 
+
+If you want your sever to be able to handle incoming connections on more than just port 22 for SSH you can specify them using the `extraPorts` key in your `custom.yaml` file. For example if you want to run a web server you could add:
+
+```yaml
+extraPorts:
+  - port: 80
+    proto: TCP
+    name: http
+  - port: 443
+    proto: TCP
+    name: https  
+```
+
+All of the fields are required (including `proto` and `name` which is an arbitrary identifier)
+
+## System Configuration 
+
+There are three stages where configuration can be inserted:
+
 1. Executing an arbitrary command in an arbitrary GIT repository. This is the most flexible stage. 
+1. The execution of `/etc/rc.local` on boot. This stage customizes the image with SSH keys and creates the admin user. 
+1. The `Dockerfile` build. The purpose of this stage is have a functional base container with most of good stuff installed. This is the least flexible stage. 
 
 The next sections describe how to customize each stage. 
+
+### User Customization 
+
+The default `/etc/rc.local` script uses variables that placed in the `/etc/rc.env` file. The following customization variables become environment variables at startup: 
+
+  | Chart Variable | Environment Variable | 
+  | --- | --- | 
+  | `user` | `DEFAULT_USER` | 
+  | `userSSHKey` | `DEFAULT_KEY` | 
+  | `userSSHImport` | `DEFAULT_KEY_IMPORT` | 
+  | `hostName` | `SET_HOSTNAME` | 
+  | `customizeRepo` | `CUSTOMIZE_REPO` | 
+  | `customizeCommand` | `CUSTOMIZE_CMD` | 
+  
+Content added to the `rcEnv` key in your `custom.yaml` file will be appended to `/etc/rc.env`. The environment variables in `/etc/rc.env` are defined during system start and during user customization. This is a good place to put API keys and other secrets that might be useful during customization. 
+
+The `/etc/rc.local` script does the equivalent of: 
+
+```bash 
+git clone --recurse-submodules $CUSTOMIZE_REPO /tmp/repo-root
+cd /tmp/repo-root 
+$CUSTOMIZE_CMD
+```
+
+The commands are run as the user `$DEFAULT_USER`, not `root`. 
+
+#### Why do user customization? 
+
+1. This is the easiest way to customize your server. Try this first. 
+
+### Customizing Boot 
+
+The images use `systemd` to run the classic `rc.local` script. This works well because there's existing infrastructure so not much image customization has to be done. The `sshd` service has been updated to wait for the `rc-local` service to finish, because SSH keys are generated by `/etc/rc.local`. The contents of `/etc/rc.local` are in the Helm chart. You can update the script by adding the following key to `custom.yaml`:
+
+```yaml
+rcLocal: |
+  #! /usr/bin/bash
+  set -e 
+
+  . /etc/rc.env 
+  
+  [...your code here...]
+```
+
+You should look at the existing code in `cloud-server/values.yaml`. There are a few important things that the `rc.local` script must do: 
+
+1. Set the hostname 
+1. Create SSH host keys and sign them with the SSH CA key 
+1. Create the admin user, make sure they have `sudo` access and install their SSH public keys 
+1. Any personal customization 
+1. Touch the `/ready` file to tell kubernetes that the container is ready. 
+
+#### Why customize boot? 
+
+1. If you have a non-Ansible way to deliver customization, i.e. Puppet or Chef networks.
 
 ### Custom Docker Images 
 
@@ -100,61 +223,6 @@ Helm will then deploy your custom image.
 1. If you want to use Puppet or Chef instead of Ansible.
 1. If you want to use a non-supplied distro. 
  
-### Customizing Boot 
-
-The images use `systemd` to run the classic `rc.local` script. This works well because there's existing infrastructure so not much image customization has to be done. The `sshd` service has been updated to wait for the `rc-local` service to finish, because SSH keys are generated by `/etc/rc.local`. The contents of `/etc/rc.local` are in the Helm chart. You can update the script by adding the following key to `custom.yaml`:
-
-```yaml
-rcLocal: |
-  #! /usr/bin/bash
-  set -e 
-
-  . /etc/rc.env 
-  
-  [...your code here...]
-```
-
-You should look at the existing code in `cloud-native-server/values.yaml`. There are a few important things that the `rc.local` script must do: 
-
-1. Set the hostname 
-1. Create SSH host keys and sign them with the SSH CA key 
-1. Create the admin user, make sure they have `sudo` access and install their SSH public keys 
-1. Any personal customization 
-1. Touch the `/ready` file to tell kubernetes that the container is ready. 
-
-#### Why customize boot? 
-
-1. If you have another way to deliver customization, i.e. Puppet or Chef networks.
-
-### User Customization 
-
-The default `/etc/rc.local` script uses variables that placed in the `/etc/rc.env` file. The following customization variables become environment variables at startup: 
-
-  | Chart Variable | Environment Variable | 
-  | --- | --- | 
-  | `user` | `DEFAULT_USER` | 
-  | `userSSHKey` | `DEFAULT_KEY` | 
-  | `userSSHImport` | `DEFAULT_KEY_IMPORT` | 
-  | `hostName` | `SET_HOSTNAME` | 
-  | `customizeRepo` | `CUSTOMIZE_REPO` | 
-  | `customizeCommand` | `CUSTOMIZE_CMD` | 
-  
-Content added to the `rcEnv` key in you `custom.yaml` file will be appended to `/etc/rc.env`. The environment variables in `/etc/rc.env` are defined during system start and during user customization. This is a good place to put API keys and other secrets that might be useful during customization. 
-
-The `/etc/rc.local` script does the equivalent of: 
-
-```bash 
-git clone --recurse-submodules $CUSTOMIZE_REPO /tmp/repo-root
-cd /tmp/repo-root 
-$CUSTOMIZE_CMD
-```
-
-The commands are run as the user `$DEFAULT_USER`, not `root`. The Ansible playbooks in `/init` are an example of how you can customize your systems during startup.
-
-#### Why do user customization? 
-
-1. This is the easiest way to customize your server. Try this first. 
-
 ## Security 
 
 This project was inspired by running [LXD](https://linuxcontainers.org/lxd/introduction/) containers for the last few years. They took the place of VMware VMs and I was really happy with how much easier they are to build and manage. I started to wonder, *would it be possible to run `systemd` in an unprivileged container in Kubernetes?* It turns out the answer is no (I will explain this in detail at some point). This project runs `systemd` in a privileged container, but also supports unprivileged containers by launching `sshd` directly without `systemd`. 
@@ -171,12 +239,8 @@ The next sections will show you how to configure the application based on the an
 
 **Run the privileged version.** This the default. You can set the privileged setting in your `custom.yaml` file: 
 
-```yaml
-securityContext: 
-  privileged: true
-  capabilities:
-    add:
-      - SYS_ADMIN
+```console
+$ helm install .... --set privileged=true 
 ```
 
 This results in a very VM-like system. Users login and get a personal `cgroup` and can see each other with the `who` and `w` commands. The system runs normally with periodic security updates, `cron` and all of the things you'd expect. But, the container runs as root on the node so a container escape is serious. Container escapes are harder --maybe impossible-- as a non privileged user on your system. 
@@ -185,17 +249,15 @@ This results in a very VM-like system. Users login and get a personal `cgroup` a
 
 **Run the unprivileged version.**
 
-```yaml
-securityContext: 
-  privileged: false
-  capabilities: {}
+```console
+$ helm install .... --set privileged=false
 ```
 
 This results in a system that's only running `sshd`. The Kubernetes deployment overrides the container's entrypoint do to this. Many things will still work and the user has `sudo` access. The container itself is running as an unprivileged user so a container escape is far less damaging. 
 
 ### The Hostname and `CAP_SYS_ADMIN` 
 
-Annoyingly, in order to set the hostname *inside* of the container the container process must have the `CAP_SYS_ADMIN` capability (when specified in Kubernetes is just `SYS_ADMIN`). Containers that have the capability will obey the `SET_HOSTNAME` variable and have a nice hostname:
+Annoyingly, in order to set the hostname *inside* of the container the container process must have the `CAP_SYS_ADMIN` capability (when specified in Kubernetes it's named `SYS_ADMIN`). Privileged containers will obey the `SET_HOSTNAME` variable and have a nice hostname:
 
 ```
 [admin@opus /]# 
@@ -204,11 +266,7 @@ Annoyingly, in order to set the hostname *inside* of the container the container
 Unprivileged containers will get the default hostname which comes from Kubernetes: 
 
 ```
-[admin@fedora1-cloud-server-76b7cfd78-8tlw5 /]# 
+[admin@myserver-cloud-server-0 /]# 
 ```
 
 There's no fix for this. 
-
-### Don't Touch `allowPrivilegeEscalation`
-
-The `allowPrivilegeEscalation` setting controls whether to obey the `suid` bit on programs in the container and must be set to `true`. While it may seem like a good way to restrain users, many programs on the system require `suid` to work, including `ping`, `sudo` and `passwd`. If you set `allowPrivilegeEscalation` to `false` those programs will fail. 

@@ -1,1 +1,3 @@
 secrets/
+ca_key*
+id_rsa*

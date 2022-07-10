@@ -25,8 +25,6 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       serviceAccountName: {{ include "cloud-server.serviceAccountName" . }}
-      securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       terminationGracePeriodSeconds: 10
       volumes:
         - name: sshsecret
@@ -45,12 +43,20 @@ spec:
         - name: {{ .Chart.Name }}
           tty: true
           stdin: true
-          {{- if not .Values.securityContext.privileged }}
+          {{- if .Values.privileged }}
+          securityContext:
+            privileged: true
+            allowPrivilegeEscalation: true
+            capabilities:
+              add:
+                - SYS_ADMIN
+          {{- else }}
+          securityContext:
+            privileged: false
+            allowPrivilegeEscalation: true
           command: ["/usr/bin/bash"]
           args: ["-c", "mkdir /run/sshd; /etc/rc.local; touch /ready; exec /usr/sbin/sshd -e -D"]
           {{- end }}
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
