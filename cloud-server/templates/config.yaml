@@ -5,7 +5,15 @@ metadata:
   labels:
     {{- include "cloud-server.labels" . | nindent 4 }}
 data:
-  rc.env: | {{ .Values.rcEnv | nindent 4 }}
+  rc.env: |
+    DEFAULT_USER="{{ .Values.user }}" 
+    DEFAULT_KEY="{{ .Values.userSSHKey }}"
+    DEFAULT_KEY_IMPORT="{{ .Values.userSSHImport }}"
+    SET_HOSTNAME="{{ .Values.hostName }}"
+    CUSTOMIZE_REPO="{{ .Values.customizeRepo }}"
+    CUSTOMIZE_CMD="{{ .Values.customizeCommand }}"
+    {{ .Values.rcEnv | nindent 4 }}
+
   rc.local: | {{ .Values.rcLocal | nindent 4}}
 ---
 apiVersion: v1

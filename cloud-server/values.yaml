@@ -1,6 +1,13 @@
 homeSize: 32Gi
 #homeStorageClassName: my-sc
 
+user: human 
+userSSHKey: ""
+userSSHImport: ""
+hostName: "myserver"
+customizeRepo: https://github.com/mike-matera/cloud-native-server.git
+customizeCommand: ansible-playbook --connection=local --inventory 127.0.0.1, --limit 127.0.0.1 init/playbook.yaml
+
 extraPorts: []
   #- port: 80
   #  proto: TCP
@@ -74,12 +81,7 @@ ssh:
     -----END OPENSSH PRIVATE KEY-----  
 
 rcEnv: |
-  DEFAULT_USER="human" 
-  DEFAULT_KEY=""
-  DEFAULT_KEY_IMPORT=""
-  SET_HOSTNAME="myserver"
-  CUSTOMIZE_REPO="https://github.com/mike-matera/cloud-native-server.git"
-  CUSTOMIZE_CMD="ansible-playbook --connection=local --inventory 127.0.0.1, --limit 127.0.0.1 init/playbook.yaml"
+  # Extra variables for startup here.
 
 rcLocal: |
   #! /usr/bin/bash
@@ -108,13 +110,15 @@ rcLocal: |
   fi 
 
   # User customization 
-  su ${DEFAULT_USER} -c "git clone --recurse-submodules ${CUSTOMIZE_REPO} /tmp/boot-custom"
-  (
-      cd /tmp/boot-custom 
-      su ${DEFAULT_USER} -c "${CUSTOMIZE_CMD}"
-  )
-  rm -rf /tmp/boot-custom 
-
+  if [ ! -z "${CUSTOMIZE_REPO}" ]; then 
+    su ${DEFAULT_USER} -c "git clone --recurse-submodules ${CUSTOMIZE_REPO} /tmp/boot-custom"
+    (
+        cd /tmp/boot-custom 
+        su ${DEFAULT_USER} -c "${CUSTOMIZE_CMD}"
+    )
+    rm -rf /tmp/boot-custom 
+  fi 
+  
   touch /ready
 
 

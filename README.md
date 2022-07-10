@@ -29,16 +29,13 @@ You should have a Kubernetes cluster already built and `kubectl` and `helm` inst
 3. Create a file called `custom.yaml` with the following contents: 
 
     ```yaml
-    rcEnv: |
-        DEFAULT_USER="human" 
-        DEFAULT_KEY=""
-        DEFAULT_KEY_IMPORT=""
-        SET_HOSTNAME="myserver"
-        CUSTOMIZE_REPO="https://github.com/mike-matera/cloud-native-server.git"
-        CUSTOMIZE_CMD="ansible-playbook --connection=local --inventory 127.0.0.1, --limit 127.0.0.1 init/playbook.yaml"
+    user: human 
+    userSSHKey: ""
+    userSSHImport: ""
+    hostName: "myserver"
     ```
 
-    Update the `DEFAULT_KEY` variable to hold your SSH public key or the `DEFAULT_KEY_IMPORT` to a string suitable for [ssh-import-id](https://manpages.ubuntu.com/manpages/jammy/man1/ssh-import-id.1.html) to load public keys from your GitHub or Launchpad accounts. Update the `DEFAULT_USER` and `HOSTNAME` if you like. 
+    Update the `userSSHKey` variable to hold your SSH public key or the `userSSHImport` to a string suitable for [ssh-import-id](https://manpages.ubuntu.com/manpages/jammy/man1/ssh-import-id.1.html) to load public keys from your GitHub or Launchpad accounts. Update the `user` and `hostName` if you like. 
 
 4. Use `helm` to deploy your server: 
 
@@ -59,6 +56,18 @@ You should have a Kubernetes cluster already built and `kubectl` and `helm` inst
     ```console
     $ ssh human@172.20.2.100
     ```
+
+6. Forgot to load SSH keys? **No problem!** The server is configured with an SSH Certificate Authority. Any SSH public key that's signed with the CA key will be allowed to log in. Assuming you created your own key and used the `human` username you can now create a certificate with `ssh-keygen`:
+
+```console
+$ ssh-keygen -s ./secrets/ca_key -I human_key -n human ~/.ssh/id_rsa.pub
+```
+
+A certificate will be place in `~/.ssh/id_rsa-cert.pub`. You can now login: 
+
+```console
+$ ssh human@myserver
+```
 
 ## Configuration 
 
@@ -118,19 +127,20 @@ You should look at the existing code in `cloud-native-server/values.yaml`. There
 
 ### User Customization 
 
-The default `rc.local` script looks for the existence of two variables that can be overridden using the `rcEnv` key in your `custom.yaml` file: 
+The default `/etc/rc.local` script uses variables that placed in the `/etc/rc.env` file. The following customization variables become environment variables at startup: 
 
-```yaml
-rcEnv: |
-    DEFAULT_USER="admin" 
-    DEFAULT_KEY=""
-    DEFAULT_KEY_IMPORT=""
-    SET_HOSTNAME="myserver"
-    CUSTOMIZE_REPO="https://github.com/mike-matera/cloud-native-server.git"
-    CUSTOMIZE_CMD="ansible-playbook --connection=local --inventory 127.0.0.1, --limit 127.0.0.1 init/playbook.yaml"
-```
+  | Chart Variable | Environment Variable | 
+  | --- | --- | 
+  | `user` | `DEFAULT_USER` | 
+  | `userSSHKey` | `DEFAULT_KEY` | 
+  | `userSSHImport` | `DEFAULT_KEY_IMPORT` | 
+  | `hostName` | `SET_HOSTNAME` | 
+  | `customizeRepo` | `CUSTOMIZE_REPO` | 
+  | `customizeCommand` | `CUSTOMIZE_CMD` | 
+  
+Content added to the `rcEnv` key in you `custom.yaml` file will be appended to `/etc/rc.env`. The environment variables in `/etc/rc.env` are defined during system start and during user customization. This is a good place to put API keys and other secrets that might be useful during customization. 
 
-The `rc.local` script does the equivalent of: 
+The `/etc/rc.local` script does the equivalent of: 
 
 ```bash 
 git clone --recurse-submodules $CUSTOMIZE_REPO /tmp/repo-root
@@ -138,7 +148,7 @@ cd /tmp/repo-root
 $CUSTOMIZE_CMD
 ```
 
-The commands are run as the user `$DEFAULT_USER`, not `root`. The variables from `rcEnv` are defined so you can add variables to `rcEnv` that are used by your custom repository command. The Ansible playbooks in `/init` are an example of how you can customize your systems.  
+The commands are run as the user `$DEFAULT_USER`, not `root`. The Ansible playbooks in `/init` are an example of how you can customize your systems during startup.
 
 #### Why do user customization? 
 
