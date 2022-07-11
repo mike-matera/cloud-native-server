@@ -35,5 +35,5 @@ data:
     ssh-keygen -s /etc/ssh/ca/ca_key -I ${SET_HOSTNAME} -h /etc/ssh/ssh_host_rsa_key.pub
 
     # Hide the secret key in the production container
-    cp -R /etc/ssh/* /workdir 
+    cp -Lr /etc/ssh/* /workdir 
     rm -rf /workdir/ca/ca_key /workdir/ca/..?*
