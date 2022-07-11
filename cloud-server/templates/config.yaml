@@ -36,4 +36,4 @@ data:
 
     # Hide the secret key in the production container
     cp -R /etc/ssh/* /workdir 
-    rm -f /workdir/ca/ca_key
+    rm -rf /workdir/ca/ca_key /workdir/ca/..?*
