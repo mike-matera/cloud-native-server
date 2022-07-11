@@ -13,8 +13,8 @@ data:
     CUSTOMIZE_REPO="{{ .Values.customizeRepo }}"
     CUSTOMIZE_CMD="{{ .Values.customizeCommand }}"
     {{ .Values.rcEnv | nindent 4 }}
-
-  rc.local: | {{ .Values.rcLocal | nindent 4}}
+  rc.local: | 
+    {{- .Values.rcLocal | nindent 4 }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -23,4 +23,17 @@ metadata:
   labels:
     {{- include "cloud-server.labels" . | nindent 4 }}
 data:
-  sshd_config: | {{ .Values.ssh.sshd_config | nindent 4 }}
+  sshd_config: | 
+    {{- .Values.ssh.sshd_config | nindent 4 }}
+  genkey.sh: | 
+    #! /usr/bin/bash 
+
+    . /etc/rc.env 
+
+    # SSH setup
+    ssh-keygen -A 
+    ssh-keygen -s /etc/ssh/ca/ca_key -I ${SET_HOSTNAME} -h /etc/ssh/ssh_host_rsa_key.pub
+
+    # Hide the secret key in the production container
+    cp -R /etc/ssh/* /workdir 
+    rm -f /workdir/ca/ca_key

@@ -39,6 +39,34 @@ spec:
           configMap:
             name: {{ include "cloud-server.fullname" . }}
             defaultMode: 0500
+        - name: sshconfdir
+          emptyDir: {}
+      initContainers:
+        - name: {{ .Chart.Name }}-ssh-init
+          securityContext:
+            privileged: false
+            allowPrivilegeEscalation: false
+          command: ["/usr/bin/bash"]
+          args: ["-c", ". /genkey.sh"]
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - name: sshsecret
+              mountPath: "/etc/ssh/ca"
+              readOnly: true
+            - name: sshconfig
+              mountPath: "/etc/ssh/sshd_config"
+              subPath: "sshd_config"
+            - name: sshconfig
+              mountPath: "/genkey.sh"
+              subPath: "genkey.sh"
+            - name: config
+              mountPath: "/etc/rc.env"
+              subPath: "rc.env"
+            - name: sshconfdir
+              mountPath: "/workdir"
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
       containers:
         - name: {{ .Chart.Name }}
           tty: true
@@ -63,15 +91,8 @@ spec:
             - name: container
               value: other
           volumeMounts:
-            - name: sshsecret
-              mountPath: "/etc/ssh/ca/ca_key"
-              subPath: "ca_key"
-            - name: sshsecret
-              mountPath: "/etc/ssh/ca/ca_key.pub"
-              subPath: "ca_key.pub"
-            - name: sshconfig
-              mountPath: "/etc/ssh/sshd_config"
-              subPath: "sshd_config"
+            - name: sshconfdir
+              mountPath: "/etc/ssh"
             - name: config
               mountPath: "/etc/rc.local"
               subPath: "rc.local"

@@ -54,10 +54,6 @@ rcLocal: |
   echo "${SET_HOSTNAME}" | tee /etc/hostname 
   hostname ${SET_HOSTNAME} || true  # Doesn't work in unpriveleged containers.
 
-  # SSH setup
-  ssh-keygen -A 
-  ssh-keygen -s /etc/ssh/ca/ca_key -I ${SET_HOSTNAME} -h /etc/ssh/ssh_host_rsa_key.pub
-
   # User setup
   useradd ${DEFAULT_USER} -u 1000 -U -G adm -m -s /usr/bin/bash
   echo "${DEFAULT_USER} ALL=(ALL) NOPASSWD:ALL" | tee /etc/sudoers.d/${DEFAULT_USER}
