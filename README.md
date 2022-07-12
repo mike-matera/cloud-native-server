@@ -84,8 +84,7 @@ The following table shows the configuration options available in `cloud-server/v
 | `hostName` | The hostname | `"myserver"` |
 | `userSSHKey` | An SSH public key that will be added to authorized_keys of the default user. | `""` |
 | `userSSHImport` | Import default user keys with `ssh-import-id` | `""` | 
-| `customizeRepo` | Checkout a repository on boot | `""` | 
-| `customizeCommand` | Run this command in the root of the `customizeRepo` repository | `""` | 
+| `customizeCommand` | Run this command in the default user's home directory if it exists. | `"bin/init.sh"` | 
 | `privileged` | Create a privileged container. **See the "Security" section for details** | `true` |  
 
 ### SSH Parameters 
@@ -142,7 +141,7 @@ All of the fields are required (including `proto` and `name` which is an arbitra
 
 There are three stages where configuration can be inserted:
 
-1. Executing an arbitrary command in an arbitrary GIT repository. This is the most flexible stage. 
+1. Executing an arbitrary command in the default user's home directory. This is the most flexible stage. 
 1. The execution of `/etc/rc.local` on boot. This stage customizes the image with SSH keys and creates the admin user. 
 1. The `Dockerfile` build. The purpose of this stage is have a functional base container with most of good stuff installed. This is the least flexible stage. 
 
@@ -152,23 +151,21 @@ The next sections describe how to customize each stage.
 
 The default `/etc/rc.local` script uses variables that placed in the `/etc/rc.env` file. The following customization variables become environment variables at startup: 
 
-  | Chart Variable | Environment Variable | 
-  | --- | --- | 
-  | `user` | `DEFAULT_USER` | 
-  | `userSSHKey` | `DEFAULT_KEY` | 
-  | `userSSHImport` | `DEFAULT_KEY_IMPORT` | 
-  | `hostName` | `SET_HOSTNAME` | 
-  | `customizeRepo` | `CUSTOMIZE_REPO` | 
-  | `customizeCommand` | `CUSTOMIZE_CMD` | 
+  | Chart Variable | Environment Variable | Default | 
+  | --- | --- | --- |
+  | `user` | `DEFAULT_USER` | `human` |
+  | `userSSHKey` | `DEFAULT_KEY` | | 
+  | `userSSHImport` | `DEFAULT_KEY_IMPORT` | |  
+  | `hostName` | `SET_HOSTNAME` | `myserver` | 
+  | `customizeCommand` | `CUSTOMIZE_COMMAND` | `bin/init.sh` | 
   
 Content added to the `rcEnv` key in your `custom.yaml` file will be appended to `/etc/rc.env`. The environment variables in `/etc/rc.env` are defined during system start and during user customization. This is a good place to put API keys and other secrets that might be useful during customization. 
 
 The `/etc/rc.local` script does the equivalent of: 
 
 ```bash 
-git clone --recurse-submodules $CUSTOMIZE_REPO /tmp/repo-root
-cd /tmp/repo-root 
-$CUSTOMIZE_CMD
+cd /home/${DEFAULT_USER}
+${CUSTOMIZE_COMMAND}
 ```
 
 The commands are run as the user `$DEFAULT_USER`, not `root`. 

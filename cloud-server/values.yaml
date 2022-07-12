@@ -5,8 +5,7 @@ user: human
 hostName: "myserver"
 userSSHKey: ""
 userSSHImport: ""
-customizeRepo: ""
-customizeCommand: ""
+customizeCommand: "bin/init.sh"
 privileged: true 
 
 extraPorts: []
@@ -65,18 +64,15 @@ rcLocal: |
       su ${DEFAULT_USER} -c "/usr/bin/ssh-import-id ${DEFAULT_KEY_IMPORT}"
   fi 
 
-  # User customization 
-  if [ ! -z "${CUSTOMIZE_REPO}" ]; then 
-    su ${DEFAULT_USER} -c "git clone --recurse-submodules ${CUSTOMIZE_REPO} /tmp/boot-custom"
-    (
-        cd /tmp/boot-custom 
-        su ${DEFAULT_USER} -c "${CUSTOMIZE_CMD}"
-    )
-    rm -rf /tmp/boot-custom 
-  fi 
-  
-  touch /ready
+  # User customization
+  (
+    cd /home/$DEFAULT_USER
+    if [ -f "$CUSTOMIZE_COMMAND" ]; then 
+      su ${DEFAULT_USER} -c "$CUSTOMIZE_COMMAND"
+    fi 
+  )
 
+  touch /ready
 
 image:
   repository: ghcr.io/mike-matera/cloud-native-server
