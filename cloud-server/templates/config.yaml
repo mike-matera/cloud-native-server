@@ -10,10 +10,14 @@ data:
     export DEFAULT_KEY="{{ .Values.userSSHKey }}"
     export DEFAULT_KEY_IMPORT="{{ .Values.userSSHImport }}"
     export SET_HOSTNAME="{{ .Values.hostName }}"
+    export CUSTOMIZE_REPO="{{ .Values.customizeRepo }}"
+    export CUSTOMIZE_REPO_COMMAND="{{ .Values.customizeRepoCommand }}"
     export CUSTOMIZE_COMMAND="{{ .Values.customizeCommand }}"
     {{ .Values.rcEnv | nindent 4 }}
   rc.local: | 
     {{- .Values.rcLocal | nindent 4 }}
+  rc.user: | 
+    {{- .Values.rcUser | nindent 4 }}
 ---
 apiVersion: v1
 kind: ConfigMap

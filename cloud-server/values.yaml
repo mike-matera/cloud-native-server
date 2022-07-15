@@ -5,7 +5,9 @@ user: human
 hostName: "myserver"
 userSSHKey: ""
 userSSHImport: ""
-customizeCommand: "bin/init.sh"
+customizeRepo: ""
+customizeRepoCommand: ""
+customizeCommand: ""
 privileged: true 
 
 extraPorts: []
@@ -42,6 +44,41 @@ ssh:
 rcEnv: |
   # Extra variables for startup here.
 
+rcUser: |
+  #! /usr/bin/bash
+  set -e 
+
+  # Load the SSH key
+  if [ ! -z "${DEFAULT_KEY}" ]; then
+      mkdir -p ~/.ssh
+      echo ${DEFAULT_KEY} > ~/.ssh/authorized_keys
+  fi
+
+  # Load account SSH keys
+  if [ ! -z "${DEFAULT_KEY_IMPORT}" ]; then
+      /usr/bin/ssh-import-id ${DEFAULT_KEY_IMPORT}
+  fi 
+
+  # Customize by repo
+  if [ ! -z "${CUSTOMIZE_REPO}" ]; then 
+    tempdir=$(mktemp -d)
+    git clone --recurse-submodules ${CUSTOMIZE_REPO} $tempdir
+    (
+      cd $tempdir
+      bash -c "$CUSTOMIZE_REPO_COMMAND" || true
+    )
+    rm -rf $tempdir 
+  fi 
+
+  # Customize by command
+  (
+    cd /home/$DEFAULT_USER
+    if [ ! -z "$CUSTOMIZE_COMMAND" ]; then 
+      bash -c "$CUSTOMIZE_COMMAND" 
+    fi 
+  )
+
+
 rcLocal: |
   #! /usr/bin/bash
   set -e 
@@ -57,20 +94,14 @@ rcLocal: |
   useradd ${DEFAULT_USER} -u 1000 -U -G adm -m -s /usr/bin/bash
   echo "${DEFAULT_USER} ALL=(ALL) NOPASSWD:ALL" | tee /etc/sudoers.d/${DEFAULT_USER}
   chown ${DEFAULT_USER}:${DEFAULT_USER} /home/${DEFAULT_USER}
-  if [ ! -z "${DEFAULT_KEY}" ]; then
-      su ${DEFAULT_USER} -c "mkdir -p ~/.ssh; echo ${DEFAULT_KEY} > ~/.ssh/authorized_keys"
-  fi 
-  if [ ! -z "${DEFAULT_KEY_IMPORT}" ]; then
-      su ${DEFAULT_USER} -c "/usr/bin/ssh-import-id ${DEFAULT_KEY_IMPORT}"
-  fi 
 
   # User customization
-  (
-    cd /home/$DEFAULT_USER
-    if [ -f "$CUSTOMIZE_COMMAND" ]; then 
-      su ${DEFAULT_USER} -c "$CUSTOMIZE_COMMAND"
-    fi 
-  )
+  tempfile=$(mktemp)
+  cp /etc/rc.user $tempfile 
+  chown ${DEFAULT_USER}:${DEFAULT_USER} $tempfile 
+  chmod u+x $tempfile
+  su ${DEFAULT_USER} -c "$tempfile" || true
+  rm $tempfile
 
   touch /ready
 

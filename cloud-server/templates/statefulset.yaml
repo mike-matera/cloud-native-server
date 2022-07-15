@@ -94,6 +94,9 @@ spec:
             - name: sshconfdir
               mountPath: "/etc/ssh"
             - name: config
+              mountPath: "/etc/rc.user"
+              subPath: "rc.user"
+            - name: config
               mountPath: "/etc/rc.local"
               subPath: "rc.local"
             - name: config
