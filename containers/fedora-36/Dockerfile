@@ -6,7 +6,8 @@ RUN dnf reinstall -y $(dnf list --installed | cut -d' ' -f1)
 
 RUN dnf install -y \
     systemd man man-pages man-db openssh-server ansible git \
-    @xfce-desktop tigervnc-server firefox \
+    @xfce-desktop tigervnc-server firefox zsh ksh tcsh csh \
+    podman \
     && dnf clean all 
 
 RUN ln -fs multi-user.target /usr/lib/systemd/system/default.target

@@ -11,8 +11,9 @@ RUN rm /etc/systemd/system/network-online.target.wants/systemd-networkd-wait-onl
 
 COPY mozilla-firefox-pin /etc/apt/preferences.d/mozilla-firefox
 RUN apt update -y && DEBIAN_FRONTEND=noninteractive apt install -y \
-    curl git ansible \
-    xfce4 xfce4-goodies tightvncserver firefox \
+    curl git ansible xfce4 xfce4-goodies tightvncserver firefox \
+    python3-pip tree bsdmainutils dictionaries-common wamerican \
+    mtr zsh ksh tcsh csh podman ubuntu-server \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
