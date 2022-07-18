@@ -40,7 +40,8 @@ spec:
             name: {{ include "cloud-server.fullname" . }}
             defaultMode: 0500
         - name: sshconfdir
-          emptyDir: {}
+          emptyDir:
+            medium: Memory
       initContainers:
         - name: {{ .Chart.Name }}-ssh-init
           securityContext:
