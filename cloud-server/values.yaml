@@ -2,6 +2,7 @@ homeSize: 2Gi
 #homeStorageClassName: my-sc
 
 user: human 
+userID: 10000
 hostName: "myserver"
 userSSHKey: ""
 userSSHImport: ""
@@ -91,7 +92,7 @@ rcLocal: |
   hostname ${SET_HOSTNAME} || true  # Doesn't work in unpriveleged containers.
 
   # User setup
-  useradd ${DEFAULT_USER} -u 1000 -U -G adm -m -s /usr/bin/bash
+  useradd ${DEFAULT_USER} -u ${DEFAULT_USER_ID} -U -G adm -m -s /usr/bin/bash
   echo "${DEFAULT_USER} ALL=(ALL) NOPASSWD:ALL" | tee /etc/sudoers.d/${DEFAULT_USER}
   chown ${DEFAULT_USER}:${DEFAULT_USER} /home/${DEFAULT_USER}
 

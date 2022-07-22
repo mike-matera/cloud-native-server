@@ -3,5 +3,5 @@ name: cloud-server
 description: An individual UNIX server for teaching.
 
 type: application
-version: 0.11.3
+version: 0.12.0
 appVersion: "jammy-2022071501"

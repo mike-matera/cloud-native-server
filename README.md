@@ -81,6 +81,7 @@ The following table shows the configuration options available in `cloud-server/v
 | `homeSize` | Size of the `/home` mount | `2Gi` | 
 | `homeStorageClassName` | Storage class for the home mount | `""` | 
 | `user` | The username of the default user | `"human"` |  
+| `userID` | The UID of the default user | `10000` |
 | `hostName` | The hostname | `"myserver"` |
 | `userSSHKey` | An SSH public key that will be added to authorized_keys of the default user. | `""` |
 | `userSSHImport` | Import default user keys with `ssh-import-id` | `""` | 
