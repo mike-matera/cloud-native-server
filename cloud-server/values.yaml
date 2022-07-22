@@ -92,7 +92,8 @@ rcLocal: |
   hostname ${SET_HOSTNAME} || true  # Doesn't work in unpriveleged containers.
 
   # User setup
-  useradd ${DEFAULT_USER} -u ${DEFAULT_USER_ID} -U -G adm -m -s /usr/bin/bash
+  groupadd ${DEFAULT_USER} -g ${DEFAULT_USER_ID}
+  useradd ${DEFAULT_USER} -u ${DEFAULT_USER_ID} -g ${DEFAULT_USER} -G adm -m -s /usr/bin/bash
   echo "${DEFAULT_USER} ALL=(ALL) NOPASSWD:ALL" | tee /etc/sudoers.d/${DEFAULT_USER}
   chown ${DEFAULT_USER}:${DEFAULT_USER} /home/${DEFAULT_USER}
 
