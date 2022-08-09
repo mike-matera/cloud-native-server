@@ -96,6 +96,7 @@ The following table shows the configuration options available in `cloud-server/v
 | --- | --- | --- | 
 | `ssh.ca_key` | An SSH private key for signing SSH certificates | None/Required | 
 | `ssh.ca_key_pub` | The corresponding public key for `ssh.ca_key` | None/Required | 
+| `ssh.existingSecret` | An existing secret with keys `ca_key` and `ca_key_pub`. The other settings are ignored if this one exists. | None/Required | 
 
 ### Image Options 
 

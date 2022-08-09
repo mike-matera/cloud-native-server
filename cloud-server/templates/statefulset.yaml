@@ -28,9 +28,15 @@ spec:
       terminationGracePeriodSeconds: 10
       volumes:
         - name: sshsecret
+          {{- if .Values.ssh.existingSecret }}
+          secret:
+            secretName: {{ .Values.ssh.existingSecret }}
+            defaultMode: 0400
+          {{- else -}}
           secret:
             secretName: {{ include "cloud-server.fullname" . }}
             defaultMode: 0400
+          {{- end }}
         - name: sshconfig
           configMap:
             name: {{ include "cloud-server.fullname" . }}-ssh
