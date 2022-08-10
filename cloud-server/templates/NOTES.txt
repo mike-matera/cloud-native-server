@@ -11,4 +11,8 @@ Your cloud SSH server has started!
 
 Add the following line to your `known_hosts` file to automatically trust servers with your CA key:
 
+{{- if .Values.ssh.existingSecret }}
+    See existing secret
+{{- else }}
     @cert-authority * {{ .Values.ssh.ca_key_pub }}
+{{- end }}
