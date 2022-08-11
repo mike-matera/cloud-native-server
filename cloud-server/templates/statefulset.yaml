@@ -32,7 +32,7 @@ spec:
           secret:
             secretName: {{ .Values.ssh.existingSecret }}
             defaultMode: 0400
-          {{- else -}}
+          {{- else }}
           secret:
             secretName: {{ include "cloud-server.fullname" . }}
             defaultMode: 0400
