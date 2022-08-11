@@ -35,7 +35,9 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.REGISTRY }}/mike-matera/cloud-server-fedora-36
-
+          tags: |
+            type=ref,event=branch
+            type=sha
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:
