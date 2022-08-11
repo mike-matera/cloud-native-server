@@ -108,7 +108,7 @@ rcLocal: |
   touch /ready
 
 image:
-  repository: ghcr.io/mike-matera/cloud-native-server
+  repository: ghcr.io/mike-matera/cloud-server-ubuntu-jammy
   pullPolicy: IfNotPresent
   tag: ""
 
