@@ -3,11 +3,8 @@ name: Jammy
 on:
   workflow_dispatch: {}
   push:
-    branches:
-      - main
-    paths:
-      - containers/ubuntu-jammy/**
-
+    tags:
+      - release-*
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -41,6 +38,7 @@ jobs:
           images: ${{ env.REGISTRY }}/mike-matera/cloud-server-ubuntu-jammy
           tags: |
             type=ref,event=branch
+            type=ref,event=tag
             type=sha
       - name: Build and push Docker image
         uses: docker/build-push-action@v3

@@ -3,10 +3,8 @@ name: Fedora36
 on:
   workflow_dispatch: {}
   push:
-    branches:
-      - main
-    paths:
-      - containers/fedora-36/**
+    tags:
+      - release-*
 
 env:
   REGISTRY: ghcr.io
@@ -37,6 +35,7 @@ jobs:
           images: ${{ env.REGISTRY }}/mike-matera/cloud-server-fedora-36
           tags: |
             type=ref,event=branch
+            type=ref,event=tag
             type=sha
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
