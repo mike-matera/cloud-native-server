@@ -2,8 +2,10 @@ name: Fedora36
 
 on:
   push:
-    tags:
-      - fedora-36-*
+    branches:
+      - main
+    paths:
+      - containers/fedora-36/**
 
 env:
   REGISTRY: ghcr.io

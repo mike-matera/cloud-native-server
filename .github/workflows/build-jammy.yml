@@ -2,8 +2,10 @@ name: Jammy
 
 on:
   push:
-    tags:
-      - jammy-*
+    branches:
+      - main
+    paths:
+      - containers/ubuntu-jammy/**
 
 env:
   REGISTRY: ghcr.io

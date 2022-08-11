@@ -17,6 +17,17 @@ RUN apt update -y && DEBIAN_FRONTEND=noninteractive apt install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Google Cloud SDK
+RUN apt-get install -y apt-transport-https ca-certificates gnupg \
+    && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add - \
+    && echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list \
+    && apt-get update -y && apt-get install -y google-cloud-sdk
+
+# Install Terraform
+RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add - \
+    && apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main" \
+    && apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get install -y terraform
+
 RUN mkdir -p /etc/ssh/ca
 
 STOPSIGNAL SIGRTMIN+3

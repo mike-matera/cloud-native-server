@@ -10,6 +10,15 @@ RUN dnf install -y \
     podman \
     && dnf clean all 
 
+# Install Terraform 
+RUN dnf install -y dnf-plugins-core \
+    && dnf config-manager --add-repo https://rpm.releases.hashicorp.com/fedora/hashicorp.repo \
+    && dnf install -y terraform
+
+# Install gcloud 
+COPY google-cloud-sdk.repo /etc/yum.repos.d/google-cloud-sdk.repo
+RUN dnf install -y libxcrypt-compat.x86_64 google-cloud-cli
+
 RUN ln -fs multi-user.target /usr/lib/systemd/system/default.target
 
 RUN mkdir -p /etc/rc.d &&  ln -s /etc/rc.local /etc/rc.d/rc.local
