@@ -13,3 +13,7 @@ RUN pacman -Sy && pacman -S --noconfirm openssh \
 
 COPY --from=gcp_builder /google-cloud-sdk /opt/google-cloud-sdk
 
+RUN mkdir -p /etc/ssh/ca
+
+STOPSIGNAL SIGRTMIN+3
+ENTRYPOINT ["/sbin/init"]
