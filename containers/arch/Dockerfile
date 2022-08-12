@@ -13,6 +13,9 @@ RUN pacman -Sy && pacman -S --noconfirm openssh sudo inetutils  \
 
 COPY --from=gcp_builder /google-cloud-sdk /opt/google-cloud-sdk
 
+COPY rc-local.service /usr/lib/systemd/system
+RUN ln -s /usr/lib/systemd/system/rc-local.service /usr/lib/systemd/system/multi-user.target.wants
+
 RUN mkdir -p /etc/ssh/ca
 
 STOPSIGNAL SIGRTMIN+3
