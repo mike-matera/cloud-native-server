@@ -7,7 +7,7 @@ FROM docker.io/archlinux:latest
 
 RUN rm /usr/lib/systemd/system/systemd-firstboot.service
 
-RUN pacman -Sy && pacman -S --noconfirm openssh \
+RUN pacman -Sy && pacman -S --noconfirm openssh sudo hostname \
     ansible python-pip man-db man-pages zsh ksh tcsh podman xfce4 tigervnc \
     terraform vim git firefox
 
