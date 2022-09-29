@@ -38,6 +38,9 @@ data:
     ssh-keygen -A 
     ssh-keygen -s /etc/ssh/ca/ca_key -I ${SET_HOSTNAME} -h /etc/ssh/ssh_host_rsa_key.pub
 
+    # Make this server trust the others that use the same CA 
+    echo '@cert-authority *' $(sudo cat /etc/ssh/ca/ca_key.pub) > /etc/ssh/ssh_known_hosts
+
     # Hide the secret key in the production container
     cp -Lr /etc/ssh/* /workdir 
     rm -rf /workdir/ca/ca_key /workdir/ca/..?*
