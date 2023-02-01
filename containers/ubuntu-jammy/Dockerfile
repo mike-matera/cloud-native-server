@@ -6,7 +6,6 @@ RUN rm /etc/systemd/system/network-online.target.wants/systemd-networkd-wait-onl
     && rm /lib/systemd/system/systemd-resolved.service \
     && rm /etc/resolv.conf \
     && rm /etc/systemd/system/multi-user.target.wants/snapd.* \
-    && rm /etc/systemd/system/multi-user.target.wants/ModemManager.service \ 
     && rm /etc/systemd/system/multi-user.target.wants/networkd-dispatcher.service 
 
 COPY mozilla-firefox-pin /etc/apt/preferences.d/mozilla-firefox
