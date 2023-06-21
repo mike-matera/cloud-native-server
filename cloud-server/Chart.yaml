@@ -4,4 +4,4 @@ description: An individual UNIX server for teaching.
 
 type: application
 version: 0.15.1
-appVersion: "release-2023013102"
+appVersion: "release-20230620"
