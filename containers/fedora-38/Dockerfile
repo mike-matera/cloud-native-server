@@ -1,4 +1,4 @@
-FROM fedora:36 
+FROM fedora:38
 
 # Re-install man pages
 COPY dnf.conf /etc/dnf/dnf.conf 

@@ -1,5 +1,6 @@
 FROM scratch 
 
+# from: https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64-root.tar.xz
 ADD jammy-server-cloudimg-amd64-root.tar.xz / 
 RUN rm /etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service \
     && rm /etc/systemd/system/multi-user.target.wants/systemd-resolved.service \
