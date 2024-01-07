@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: {{ include "cloud-server.fullname" . }}
   labels:
@@ -8,7 +8,6 @@ spec:
   selector:
     matchLabels:
       {{- include "cloud-server.selectorLabels" . | nindent 6 }}
-  serviceName: {{ include "cloud-server.fullname" . }}
   replicas: 1
   minReadySeconds: 0
   template:
@@ -48,6 +47,15 @@ spec:
         - name: sshconfdir
           emptyDir:
             medium: Memory
+        - name: home
+          persistentVolumeClaim:
+            claimName: {{ include "cloud-server.fullname" . }}-home
+        {{- $ctx := . }}
+        {{- range .Values.extraMounts }}
+        - name: extramount-{{ .name }}
+          persistentVolumeClaim:
+            claimName: {{ include "cloud-server.fullname" $ctx }}-{{ .name }}
+        {{- end }}
       initContainers:
         - name: {{ .Chart.Name }}-ssh-init
           securityContext:
@@ -71,7 +79,7 @@ spec:
               mountPath: "/etc/rc.env"
               subPath: "rc.env"
             - name: sshconfdir
-              mountPath: "/workdir"
+              mountPath: "/workdir"              
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       containers:
@@ -110,9 +118,9 @@ spec:
               mountPath: "/etc/rc.env"
               subPath: "rc.env"
             - name: home
-              mountPath: "/home"
+              mountPath: /home
             {{- range .Values.extraMounts }}
-            - name: {{ .name }}
+            - name: extramount-{{ .name }}
               mountPath: {{ .path }}
             {{- end }}
           ports:
@@ -148,36 +156,3 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-  volumeClaimTemplates:
-    - metadata:
-        name: home
-        labels:
-          {{- include "cloud-server.labels" . | nindent 10 }}
-        annotations:
-          helm.sh/resource-policy: "keep"
-      spec:
-        accessModes:
-          - ReadWriteOnce
-        volumeMode: Filesystem
-        resources:
-          requests:
-            storage: {{ .Values.homeSize }}
-        {{- if hasKey .Values "homeStorageClassName" }}
-        storageClassName: {{ .Values.homeStorageClassName }}
-        {{- end }}
-    {{- range .Values.extraMounts }}
-    - metadata:
-        name: {{ .name }}
-        annotations:
-          helm.sh/resource-policy: "keep"
-      spec:
-        accessModes:
-          - ReadWriteOnce
-        volumeMode: Filesystem
-        resources:
-          requests:
-            storage: {{ .size }}
-        {{- if hasKey . "className" }}
-        storageClassName: {{ .className }}
-        {{- end }}
-    {{- end }}    

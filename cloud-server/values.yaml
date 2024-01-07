@@ -123,6 +123,9 @@ serviceAccount:
 
 podAnnotations: {}
 
+pvcAnnotations:
+  helm.sh/resource-policy: "keep"
+
 service:
   type: LoadBalancer
   # loadBalancerIP: 10.0.0.100

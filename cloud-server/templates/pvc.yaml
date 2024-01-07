@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: "{{ include "cloud-server.fullname" . }}-home"
+  labels:
+    {{- include "cloud-server.labels" . | nindent 4 }}
+  {{- with .Values.pvcAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: {{ .Values.homeSize }}
+  {{- if hasKey .Values "homeStorageClassName" }}
+  storageClassName: {{ .Values.homeStorageClassName }}
+  {{- end }}
+
+{{- $ctx := . }}
+{{- range .Values.extraMounts }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    {{- include "cloud-server.labels" $ctx | nindent 4 }}
+  name: "{{ include "cloud-server.fullname" $ctx }}-{{ .name }}"
+  {{- with $ctx.Values.pvcAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: {{ .size }}
+  {{- if hasKey . "className" }}
+  storageClassName: {{ .className }}
+  {{- end }}
+{{- end }}    
